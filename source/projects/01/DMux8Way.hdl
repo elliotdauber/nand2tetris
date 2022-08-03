@@ -16,5 +16,15 @@ CHIP DMux8Way {
     OUT a, b, c, d, e, f, g, h;
 
     PARTS:
-    // Put your code here:
+    Not(in=sel[0], out=notSel0);
+    Not(in=sel[1], out=notSel1);
+    Not(in=sel[2], out=notSel2);
+    QuadAnd(a=notSel0, b=notSel1, c=notSel2, d=in, out=a);
+    QuadAnd(a=sel[0], b=notSel1, c=notSel2, d=in, out=b);
+    QuadAnd(a=notSel0, b=sel[1], c=notSel2, d=in, out=c);
+    QuadAnd(a=sel[0], b=sel[1], c=notSel2, d=in, out=d);
+    QuadAnd(a=notSel0, b=notSel1, c=sel[2], d=in, out=e);
+    QuadAnd(a=sel[0], b=notSel1, c=sel[2], d=in, out=f);
+    QuadAnd(a=notSel0, b=sel[1], c=sel[2], d=in, out=g);
+    QuadAnd(a=sel[0], b=sel[1], c=sel[2], d=in, out=h);
 }

@@ -1,0 +1,37 @@
+CHIP Mux8Way {
+    IN a, b, c, d, e, f, g, h, sel[3];
+    OUT out;
+
+    PARTS:
+    Not(in=sel[0], out=notSel0);
+    Not(in=sel[1], out=notSel1);
+    Not(in=sel[2], out=notSel2);
+
+    TriAnd(a=notSel0, b=notSel1, c=notSel2, out=aMul);
+    TriAnd(a=sel[0], b=notSel1, c=notSel2, out=bMul);
+    TriAnd(a=notSel0, b=sel[1], c=notSel2, out=cMul);
+    TriAnd(a=sel[0], b=sel[1], c=notSel2, out=dMul);
+    TriAnd(a=notSel0, b=notSel1, c=sel[2], out=eMul);
+    TriAnd(a=sel[0], b=notSel1, c=sel[2], out=fMul);
+    TriAnd(a=notSel0, b=sel[1], c=sel[2], out=gMul);
+    TriAnd(a=sel[0], b=sel[1], c=sel[2], out=hMul);
+
+    And(a=a, b=aMul, out=aOut);
+    And(a=b, b=bMul, out=bOut);
+    And(a=c, b=cMul, out=cOut);
+    And(a=d, b=dMul, out=dOut);
+    And(a=e, b=eMul, out=eOut);
+    And(a=f, b=fMul, out=fOut);
+    And(a=g, b=gMul, out=gOut);
+    And(a=h, b=hMul, out=hOut);
+
+    Or(a=aOut, b=bOut, out=abOut);
+    Or(a=cOut, b=dOut, out=cdOut);
+    Or(a=abOut, b=cdOut, out=abcdOut);
+
+    Or(a=eOut, b=fOut, out=efOut);
+    Or(a=gOut, b=hOut, out=ghOut);
+    Or(a=efOut, b=ghOut, out=efghOut);
+
+    Or(a=abcdOut, b=efghOut, out=out);
+}

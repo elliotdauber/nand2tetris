@@ -1,0 +1,8 @@
+CHIP QuadAnd {
+    IN a, b, c, d;
+    OUT out;
+
+    PARTS:
+    TriAnd(a=a, b=b, c=c, out=temp);
+    And(a=temp, b=d, out=out);
+}

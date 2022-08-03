@@ -1,0 +1,8 @@
+CHIP TriAnd {
+    IN a, b, c;
+    OUT out;
+
+    PARTS:
+    And(a=a, b=b, out=temp);
+    And(a=temp, b=c, out=out);
+}
