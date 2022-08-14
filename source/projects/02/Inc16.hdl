@@ -13,5 +13,9 @@ CHIP Inc16 {
     OUT out[16];
 
     PARTS:
-   // Put you code here:
+    Not16(in=in, out=notIn);
+    Or16(a=in, b=notIn, out=ones); //all 1s
+    Add16(a=ones, b=ones, out=negTwo); //-2 (1111....1110)
+    Not16(in=negTwo, out=one); //1 (0000....0001)
+    Add16(a=in, b=one, out=out);
 }

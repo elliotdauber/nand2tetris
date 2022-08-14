@@ -1,0 +1,22 @@
+CHIP IsZero {
+    IN in[16];
+    OUT out;
+
+    PARTS:
+    Mux(a=true, b=false, sel=in[0], out=out0);
+    Mux(a=out0, b=false, sel=in[1], out=out1);
+    Mux(a=out1, b=false, sel=in[2], out=out2);
+    Mux(a=out2, b=false, sel=in[3], out=out3);
+    Mux(a=out3, b=false, sel=in[4], out=out4);
+    Mux(a=out4, b=false, sel=in[5], out=out5);
+    Mux(a=out5, b=false, sel=in[6], out=out6);
+    Mux(a=out6, b=false, sel=in[7], out=out7);
+    Mux(a=out7, b=false, sel=in[8], out=out8);
+    Mux(a=out8, b=false, sel=in[9], out=out9);
+    Mux(a=out9, b=false, sel=in[10], out=out10);
+    Mux(a=out10, b=false, sel=in[11], out=out11);
+    Mux(a=out11, b=false, sel=in[12], out=out12);
+    Mux(a=out12, b=false, sel=in[13], out=out13);
+    Mux(a=out13, b=false, sel=in[14], out=out14);
+    Mux(a=out14, b=false, sel=in[15], out=out); //if we got here, every bit has been 0, so out == 1
+}
