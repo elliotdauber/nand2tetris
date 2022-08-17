@@ -39,5 +39,48 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    //C vs A instruction
+    Mux16(a=instruction, b=aluOut, sel=instruction[15], out=aIn);
+
+    //determine if this is an A instruction
+    Not(in=instruction[15], out=aInstruction);
+    //load into A if the corresponding d bit is set or this is an A instruction
+    Or(a=instruction[5], b=aInstruction, out=loadA);
+
+    //A register
+    ARegister(in=aIn, load=loadA, out=regAOut, out[0..14]=addressM);
+
+    //use the a bit to determine whether to operate of A or M
+    //also sends the A output to addressM
+    Mux16(a=regAOut, b=inM, sel=instruction[12], out=AorMVal);
+
+    //load into D register if corresponding d bit is set and this is a C instruction
+    And(a=instruction[15], b=instruction[4], out=loadD);
+
+    //D register
+    DRegister(in=aluOut, load=loadD, out=dVal);
+
+    //execute the c bits of the instruction
+    ALU(x=dVal, y=AorMVal, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=aluOut, out=outM, zr=zr, ng=ng);
+    
+    //check jump conditions
+    And(a=ng, b=instruction[2], out=negativeJmp);
+    And(a=zr, b=instruction[1], out=zeroJmp);
+    //Nor(zr, ng) implies greater than 0
+    Or(a=zr, b=ng, out=zrOrNg);
+    Not(in=zrOrNg, out=zrNorNg);
+    And(a=zrNorNg, b=instruction[0], out=positiveJmp); //greater than zero
+
+    //determine if any of the jump conditions are true
+    Or(a=negativeJmp, b=zeroJmp, out=negativeOrZeroJmp);
+    Or(a=negativeOrZeroJmp, b=positiveJmp, out=jmpPossible);
+
+    //only jump if this is a C instruction
+    And(a=jmpPossible, b=instruction[15], out=jmp);
+
+    //program counter (uses the output from A, which would be the instruction to jump to)
+    PC(in=regAOut, load=jmp, inc=true, reset=reset, out[0..14]=pc);
+
+    //write to M if this is a C instruction and the corresponding d bit is set
+    And(a=instruction[15], b=instruction[3], out=writeM);
 }
