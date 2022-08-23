@@ -1,0 +1,1 @@
+To run the VM Translator, run: ./gradlew run --args="<filepath from vmtranslator/app/>"
