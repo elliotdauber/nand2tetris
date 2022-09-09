@@ -95,6 +95,7 @@ func (_ JackTokenizer) parse_int_const(input string) Token {
 
 func (_ JackTokenizer) parse_keyword_or_identifier(input string) Token {
 	re := regexp.MustCompile(`class|constructor|function|method|field|static|var|int|char|boolean|void|true|false|null|this|let|do|if|else|while|return|[a-zA-Z_]+[a-zA-Z0-9_]*`)
+	re.Longest()
 	res := re.FindStringIndex(input)
 	val := input[res[0]:res[1]]
 	typ := Identifier
