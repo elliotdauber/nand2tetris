@@ -9,12 +9,33 @@
  */
 class Math {
 
+    static Array _twoToThe;
+
     /** Initializes the library. */
     function void init() {
+        var int i;
+
+        let _twoToThe = Array.new(16);
+        let _twoToThe[0] = 1;
+        let i = 1;
+        while (i < 16) {
+            let _twoToThe[i] = _twoToThe[i - 1] + _twoToThe[i - 1];
+            let i = i + 1;
+        }
+        return;
+    }
+
+    /* Returns true if the ith LSB of x is 1, 0 if it is false */
+    function boolean bit(int x, int i) {
+        return ~((x & _twoToThe[i]) = 0);
     }
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
+        if (x < 0) {
+            return -x;
+        }
+        return x;
     }
 
     /** Returns the product of x and y. 
@@ -23,6 +44,20 @@ class Math {
      *  the Jack expressions x*y and multiply(x,y) return the same value.
      */
     function int multiply(int x, int y) {
+        var int sum, shiftedX, i;
+
+        let sum = 0;
+        let shiftedX = x;
+        let i = 0;
+
+        while (i < 16) {
+            if (Math.bit(y, i) = true) {
+                let sum = sum + shiftedX;
+            }
+            let shiftedX = shiftedX + shiftedX;
+            let i = i + 1;
+        }
+        return sum;
     }
 
     /** Returns the integer part of x/y.
@@ -31,17 +66,104 @@ class Math {
      *  the Jack expressions x/y and divide(x,y) return the same value.
      */
     function int divide(int x, int y) {
+        var int i, j, curr, multiple, result;
+        var boolean xNeg, yNeg;
+        var Array multiples;
+
+        //make everything positive during the calculation to make things cleaner
+        let xNeg = false;
+        let yNeg = false;
+        if (x < 0) {
+            let xNeg = true;
+            let x = Math.abs(x);
+        }
+        if (y < 0) {
+            let yNeg = true;
+            let y = Math.abs(y);
+        }
+
+        //create multiples array to avoid multiplying curr * y in every loop iteration
+        let multiples = Array.new(15);
+        let multiples[0] = y;
+        let j = 1;
+        let i = 0;
+        while ((j < 15) & (i = 0)) {
+            let multiples[j] = multiples[j - 1] + multiples[j - 1];
+            if (multiples[j] < multiples[j - 1]) {
+                //overflow has occured, start the division process with this number
+                let i = j - 1;
+            }
+            let j = j + 1;
+        }
+
+        let result = 0;
+        while (i > -1) {
+            let curr = _twoToThe[i];
+            let multiple = multiples[i];
+
+            //if multiple fits into x, reduce x by multiple and add the amount that fit (curr) to result
+            if ((multiple > -1) & ((x - multiple) > -1)) {
+                let x = x - multiple;
+                let result = result + curr;
+            }
+
+            //if x < y, we have finished the division
+            if (x < y) {
+                if (~(xNeg = yNeg)) {
+                    let result = -result;
+                }
+                return result;
+            }
+
+            let i = i - 1;
+        }
+        if (~(xNeg = yNeg)) {
+            let result = -result;
+        }
+        return result;
+    }
+
+    /** Returns x^2
+     */
+    function int square(int x) {
+        return x * x;
     }
 
     /** Returns the integer part of the square root of x. */
     function int sqrt(int x) {
+        var int y, j, squared;
+
+        //can't take the sqrt of a negative number
+        if (x < 0) {
+            return -1;
+        }
+        
+        let y = 0;
+        let j = 7;
+
+        while (j > -1) {
+            let squared = Math.square(y + _twoToThe[j]);
+            if ((squared > -1) & ~(squared > x)) {
+                let y = y + _twoToThe[j];
+            }
+            let j = j - 1;
+        }
+        return y;
     }
 
     /** Returns the greater number. */
     function int max(int a, int b) {
+        if (a > b) {
+            return a;
+        }
+        return b;
     }
 
     /** Returns the smaller number. */
     function int min(int a, int b) {
+        if (a < b) {
+            return a;
+        }
+        return b;
     }
 }

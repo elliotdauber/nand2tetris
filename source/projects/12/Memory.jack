@@ -10,25 +10,136 @@
  */ 
 class Memory {
 
+    static Array _memory;
+    static int _heapBase, _freeList, _heapSize;
+
     /** Initializes the class. */
     function void init() {
+        let _memory = 0;
+        let _heapBase = 2048;
+        let _freeList = _heapBase;
+        let _heapSize = 14436;
+        let _memory[_freeList] = _heapSize; //entire heap
+        let _memory[_freeList + 1] = 0;
+        return;
     }
 
     /** Returns the RAM value at the given address. */
     function int peek(int address) {
+        return _memory[address];
     }
 
     /** Sets the RAM value at the given address to the given value. */
     function void poke(int address, int value) {
+        let _memory[address] = value;
+        return;
     }
 
     /** Finds an available RAM block of the given size and returns
-     *  a reference to its base address. */
+     *  a reference to its base address. Returns -1 if no heap space can be found */
     function int alloc(int size) {
+        var int curr, prev, segmentSize, next, block, blockSize, sizeDiff;
+
+        if (_freeList = 0) {
+            //heap is out of space
+            return -1;
+        }
+
+        let curr = _freeList;
+        let prev = 0;
+        let blockSize = size + 1;
+
+        while (true) {
+            if (curr = 0) {
+                //failed to find any free space
+                return -1;
+            }
+
+            let segmentSize = Memory.peek(curr);
+            let next = Memory.peek(curr + 1);
+            let sizeDiff = segmentSize - size;
+            if ((sizeDiff = 1) | (sizeDiff > 2)) { 
+                //we found a block that can be used!
+                if (sizeDiff > 2) {
+                    //there is extra space that should be turned into a free block
+                    if (curr = _freeList) {
+                        //we are splitting the current head of the freelist
+                        let _freeList = _freeList + blockSize;
+                        do Memory.poke(_freeList, segmentSize - blockSize);
+                        do Memory.poke(_freeList + 1, next);
+                    } else {
+                        do Memory.poke(curr + blockSize, segmentSize - blockSize);
+                        do Memory.poke(curr + blockSize + 1, next);
+
+                        do Memory.poke(prev + 1, curr + blockSize);
+                    }
+                } else {
+                    //this entire block will be used
+                    if (curr = _freeList) {
+                        let _freeList = Memory.peek(_freeList + 1); //this could be 0, in which case we are now out of heap space
+                    } else {
+                        do Memory.poke(prev + 1, curr + blockSize);
+                    }
+                }
+                let block = curr + 1;
+                do Memory.poke(curr, blockSize); //set the new size of the block
+                do Memory.memset(block, size, 0);
+                return block;
+            }
+            let prev = curr;
+            let curr = next;
+        }
+        return 0;
     }
 
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
     function void deAlloc(Array o) {
+        var int curr, size, next, nextSize, oHeader;
+
+        let curr = _freeList;
+        let oHeader = o - 1;
+
+        while (~(Memory.peek(curr + 1) = 0)) {
+            let curr = Memory.peek(curr + 1);
+        }
+        do Memory.poke(curr + 1, oHeader); //set the next ptr of previous block to o's block header
+        let size = Memory.peek(oHeader) - 1; //get size of block from the header
+        do Memory.memset(o, size, 0); //set the memory to 0 (this includes the next pointer, which is now null)
+
+        //try to coalesce
+        let next = oHeader + size;
+        let nextSize = Memory.peek(next);
+
+        let curr = _freeList;
+        while (true) {
+            if (Memory.peek(curr + 1) = 0) {
+                //reached the end, next block was not in free list, so can't coalesce
+                return;
+            }
+            if (Memory.peek(curr + 1) = next) {
+                //next block is in free list, so can coalesce, and curr is the block that points to it
+                do Memory.poke(oHeader, size + 1 + nextSize); //add the size of next block to o's block header
+                //empty the header of the next block
+                do Memory.poke(next, 0);
+                do Memory.poke(next + 1, 0);
+                //set header of curr to oHeader instead of next
+                do Memory.poke(curr + 1, oHeader);
+            }
+            let curr = Memory.peek(curr + 1);
+        }
+
+        return;
+    }
+
+    function void memset(int address, int num_bytes, int val) {
+        var int i;
+
+        let i = 0;
+        while (i < num_bytes) {
+            do Memory.poke(address + i, val);
+            let i = i + 1;
+        }
+        return;
     }    
 }
